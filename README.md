@@ -169,9 +169,17 @@ Authorization: Bearer <JWT>
 
 ## 🚀 Como rodar a aplicação
 
-1. Baixe o projeto;
+1. Clone o projeto:
+```bash
+git clone https://github.com/mateusC2000/ControleCarbono.git
+```
+
 2. Acesse a pasta `Fiap.Api.ControleCarbono`;
-3. Execute o comando abaixo:
+```bash
+cd Fiap.Api.ControleCarbono/
+```
+
+3. Suba a aplicação:
 
 ```bash
 docker compose up
@@ -179,7 +187,9 @@ docker compose up
 
 ---
 
-## 🧪 Como executar os testes unitários
+### 🧪 Execução ds testes:
+
+1. Após acessar a pasta `Fiap.Api.ControleCarbono`:
 
 Execute o comando:
 
