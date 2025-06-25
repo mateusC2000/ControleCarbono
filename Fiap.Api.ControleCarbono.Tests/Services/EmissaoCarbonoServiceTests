@@ -1,0 +1,127 @@
+using Xunit;
+using Fiap.Api.ControleCarbono.Models;
+using Fiap.Api.ControleCarbono.Services;
+using System.Threading.Tasks;
+using System.Linq;
+using System.Collections.Generic;
+
+public class EmissaoCarbonoServiceTests
+{
+    private readonly EmissaoCarbonoService _service;
+
+    public EmissaoCarbonoServiceTests()
+    {
+        var emisssions = typeof(EmissaoCarbonoService).GetField("_emissoes", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+        emisssions.SetValue(null, new List<EmissaoCarbono>());
+        var nextId = typeof(EmissaoCarbonoService).GetField("_nextId", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+        nextId.SetValue(null, 1);
+
+        _service = new EmissaoCarbonoService();
+    }
+
+    [Fact]
+    public async Task AddAsync_ShouldAddEmissao()
+    {
+        var emissao = new EmissaoCarbono { Fonte = "Veículo", Mes = "Janeiro", Ano = 2024, Valor = 150.5, EmpresaId = 1 };
+
+        await _service.AddAsync(emissao);
+        var result = await _service.GetByIdAsync(emissao.Id);
+
+        Assert.NotNull(result);
+        Assert.Equal(1, emissao.Id);
+        Assert.Equal("Veículo", result.Fonte);
+    }
+
+    [Fact]
+    public async Task GetAllAsync_ShouldReturnAllEmissoes()
+    {
+        await _service.AddAsync(new EmissaoCarbono { Fonte = "Veículo", EmpresaId = 1 });
+        await _service.AddAsync(new EmissaoCarbono { Fonte = "Fábrica", EmpresaId = 2 });
+
+        var result = await _service.GetAllAsync();
+
+        Assert.Equal(2, result.Count);
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_ShouldReturnCorrectEmissao()
+    {
+        var emissao = new EmissaoCarbono { Fonte = "Veículo" };
+        await _service.AddAsync(emissao);
+
+        var result = await _service.GetByIdAsync(emissao.Id);
+
+        Assert.NotNull(result);
+        Assert.Equal(emissao.Id, result.Id);
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_ShouldReturnNull_WhenNotFound()
+    {
+        var result = await _service.GetByIdAsync(999);
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task GetByEmpresaIdAsync_ShouldReturnFilteredEmissoes()
+    {
+        await _service.AddAsync(new EmissaoCarbono { Fonte = "Veículo", EmpresaId = 1 });
+        await _service.AddAsync(new EmissaoCarbono { Fonte = "Fábrica", EmpresaId = 1 });
+        await _service.AddAsync(new EmissaoCarbono { Fonte = "Energia", EmpresaId = 2 });
+
+        var result = await _service.GetByEmpresaIdAsync(1);
+
+        Assert.Equal(2, result.Count);
+        Assert.True(result.All(e => e.EmpresaId == 1));
+    }
+
+    [Fact]
+    public async Task UpdateAsync_ShouldUpdateEmissao()
+    {
+        var emissao = new EmissaoCarbono { Fonte = "Original" };
+        await _service.AddAsync(emissao);
+        var updatedEmissao = new EmissaoCarbono { Fonte = "Atualizado", Mes = "Fevereiro", Ano = 2024, Valor = 200, EmpresaId = 1 };
+
+        var success = await _service.UpdateAsync(emissao.Id, updatedEmissao);
+        var result = await _service.GetByIdAsync(emissao.Id);
+
+        Assert.True(success);
+        Assert.NotNull(result);
+        Assert.Equal("Atualizado", result.Fonte);
+        Assert.Equal(emissao.Id, result.Id);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_ShouldReturnFalse_WhenNotFound()
+    {
+        var updatedEmissao = new EmissaoCarbono { Fonte = "Inexistente" };
+
+        var success = await _service.UpdateAsync(999, updatedEmissao);
+
+        Assert.False(success);
+    }
+
+    [Fact]
+    public async Task RemoveAsync_ShouldRemoveEmissao()
+    {
+        var emissao = new EmissaoCarbono { Fonte = "A ser removida" };
+        await _service.AddAsync(emissao);
+
+        var success = await _service.RemoveAsync(emissao.Id);
+        var result = await _service.GetByIdAsync(emissao.Id);
+        var allEmissoes = await _service.GetAllAsync();
+
+        Assert.True(success);
+        Assert.Null(result);
+        Assert.Empty(allEmissoes);
+    }
+
+    [Fact]
+    public async Task RemoveAsync_ShouldReturnFalse_WhenNotFound()
+    {
+        var success = await _service.RemoveAsync(999);
+
+        Assert.False(success);
+    }
+}

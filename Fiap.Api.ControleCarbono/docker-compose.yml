@@ -1,0 +1,22 @@
+services:
+  api-controle-carbono:
+    container_name: fiap-api-controle-carbono
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    volumes:
+      - ./Logs:/app/Logs
+
+  tests:
+    build:
+      context: ../
+      dockerfile: ./Fiap.Api.ControleCarbono.Tests/Dockerfile
+    depends_on:
+      - api-controle-carbono
+    volumes:
+      - ./TestResults:/src/TestResults
