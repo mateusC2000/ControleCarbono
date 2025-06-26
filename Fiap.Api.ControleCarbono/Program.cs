@@ -29,7 +29,7 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<IEmpresaService, EmpresaService>();
 builder.Services.AddScoped<IEmissaoCarbonoService, EmissaoCarbonoService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
-builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddAutoMapper(typeof(EmpresaProfile));
 builder.Services.AddAutoMapper(typeof(EmissaoCarbonoProfile));
