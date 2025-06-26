@@ -10,6 +10,24 @@ Esta documentação descreve os endpoints disponíveis no ambiente local da apli
 
 ---
 
+## 👤 Usuário
+
+### Registro de novo usuário
+
+**POST** `/api/usuario/register`
+
+**Payload:**
+```json
+{
+  "nome": "João Silva",
+  "email": "joao@email.com",
+  "username": "joao",
+  "password": "Senha123@"
+}
+```
+
+---
+
 ## 🔐 Autenticação
 
 ### Login do Usuário
@@ -36,23 +54,6 @@ Esta documentação descreve os endpoints disponíveis no ambiente local da apli
 
 ---
 
-## 👤 Usuário
-
-### Registro de novo usuário
-
-**POST** `/api/usuario/register`
-
-**Payload:**
-```json
-{
-  "nome": "João Silva",
-  "email": "joao@email.com",
-  "username": "joao",
-  "password": "Senha123@"
-}
-```
-
----
 
 ## 🏢 Empresa
 
