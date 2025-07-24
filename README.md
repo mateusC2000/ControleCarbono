@@ -177,7 +177,7 @@ git clone https://github.com/mateusC2000/ControleCarbono.git
 
 2. Acesse a pasta `Fiap.Api.ControleCarbono`;
 ```bash
-cd Fiap.Api.ControleCarbono/
+cd ControleCarbono/Fiap.Api.ControleCarbono/
 ```
 
 3. Suba a aplicação:
