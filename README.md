@@ -175,12 +175,7 @@ Authorization: Bearer <JWT>
 git clone https://github.com/mateusC2000/ControleCarbono.git
 ```
 
-2. Acesse a pasta `Fiap.Api.ControleCarbono`;
-```bash
-cd ControleCarbono/Fiap.Api.ControleCarbono/
-```
-
-3. Suba a aplicação:
+2. Suba a aplicação:
 
 ```bash
 docker compose up
@@ -190,7 +185,7 @@ docker compose up
 
 ### 🧪 Execução ds testes:
 
-1. Após acessar a pasta `Fiap.Api.ControleCarbono`:
+1. Após clonar o projeto:
 
 Execute o comando:
 
