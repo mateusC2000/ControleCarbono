@@ -62,7 +62,6 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'ControleCarbono'
-          slot-name: 'staging'
           package: .
 
   deploy-production:
