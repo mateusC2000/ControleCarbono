@@ -1,196 +1,152 @@
-# ControleCarbono
+# Projeto - ControleCarbono
 
-Aplicação para mapeamento de emissões de carbono em empresas, desenvolvida com .NET. Esta API permite o cadastro de empresas, usuários e registros de emissão de carbono, facilitando o controle e a análise de dados ambientais.
+Aplicação para mapeamento de emissões de carbono em empresas, desenvolvida com .NET. Esta API permite o cadastro de empresas, usuários e registros de emissão de carbono, facilitando o controle e a análise de dados ambientais para cidades mais inteligentes e sustentáveis.
 
-## 📚 Documentação da API - ControleCarbono
+##  Como executar localmente com Docker
 
-Esta documentação descreve os endpoints disponíveis no ambiente local da aplicação **ControleCarbono**, incluindo autenticação e operações com as entidades **Usuário**, **Empresa** e **Emissão de Carbono**.
+Para executar a aplicação e os serviços relacionados localmente, você precisará ter o Docker e o Docker Compose instalados.
 
-> **Base URL:** `http://localhost:8080`
+1.  **Clone o repositório:**
+    ```bash
+    git clone https://github.com/mateusC2000/ControleCarbono.git
+    cd ControleCarbono
+    ```
 
----
+2.  **Suba a aplicação:**
+    O comando a seguir irá construir a imagem da API e iniciar o container.
+    ```bash
+    docker compose up
+    ```
+    A API estará disponível em `http://localhost:8080`. A documentação do Swagger pode ser acessada em `http://localhost:8080/swagger`.
 
-## 👤 Usuário
+3.  **Para executar os testes:**
+    Utilize o seguinte comando para rodar os testes de integração em um ambiente containerizado:
+    ```bash
+    docker compose up tests
+    ```
 
-### Registro de novo usuário
+## 🔄 Pipeline CI/CD
 
-**POST** `/api/usuario/register`
+O projeto utiliza **GitHub Actions** para automatizar os processos de Integração Contínua (CI) e Entrega Contínua (CD).
 
-**Payload:**
-```json
-{
-  "nome": "João Silva",
-  "email": "joao@email.com",
-  "username": "joao",
-  "password": "Senha123@"
-}
+### Etapas do Pipeline
+
+O pipeline é acionado a cada `push` na branch `main` e consiste nos seguintes jobs:
+
+1.  **`build`**:
+    -   **Ambiente**: `ubuntu-latest`.
+    -   **Passos**:
+        -   Configura o ambiente .NET 8.
+        -   Constrói a aplicação (`dotnet build`).
+        -   Executa os testes automatizados (`dotnet test`).
+        -   Publica os artefatos da aplicação (`dotnet publish`).
+        -   Faz o upload dos artefatos para serem utilizados nos jobs de deploy.
+
+2.  **`deploy-staging`**:
+    -   **Dependência**: Executado após o sucesso do job `build`.
+    -   **Ambiente**: `ubuntu-latest`.
+    -   **Passos**:
+        -   Baixa os artefatos da aplicação.
+        -   Realiza o login no Azure utilizando OpenID Connect (OIDC).
+        -   Faz o deploy da aplicação no slot de **Staging** do Azure App Service.
+
+3.  **`deploy-production`**:
+    -   **Dependência**: Executado após o sucesso do job `deploy-staging`.
+    -   **Ambiente**: `ubuntu-latest`.
+    -   **Passos**:
+        -   Baixa os artefatos da aplicação.
+        -   Realiza o login no Azure.
+        -   Faz o deploy da aplicação no slot de **Production** do Azure App Service.
+
+Este fluxo garante que o código seja testado antes de ser implantado em um ambiente de homologação (Staging) e, finalmente, promovido para Produção.
+
+## 📦 Containerização
+
+A aplicação é containerizada usando Docker para garantir consistência entre os ambientes de desenvolvimento, teste e produção.
+
+### Dockerfile
+
+O `Dockerfile` utiliza uma abordagem *multi-stage build* para criar uma imagem otimizada e segura:
+
+```dockerfile
+# Estágio de Build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+# Copia os arquivos .csproj e restaura as dependências
+COPY ["Fiap.Api.ControleCarbono/Fiap.Api.ControleCarbono.csproj", "Fiap.Api.ControleCarbono/"]
+RUN dotnet restore "Fiap.Api.ControleCarbono/Fiap.Api.ControleCarbono.csproj"
+
+# Copia o restante do código fonte e publica a aplicação
+COPY . .
+WORKDIR "/src/Fiap.Api.ControleCarbono"
+RUN dotnet build "Fiap.Api.ControleCarbono.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "Fiap.Api.ControleCarbono.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+# Estágio Final (Runtime)
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+
+# Expõe as portas HTTP e HTTPS
+EXPOSE 8080
+EXPOSE 8081
+
+ENTRYPOINT ["dotnet", "Fiap.Api.ControleCarbono.dll"]
 ```
 
----
+### Estratégias Adotadas
 
-## 🔐 Autenticação
+-   **Multi-stage Build**: O primeiro estágio (`build`) compila a aplicação e publica os artefatos. O estágio final (`final`) copia apenas os artefatos publicados para uma imagem base do ASP.NET runtime, que é muito menor que a imagem do SDK. Isso resulta em uma imagem final mais leve e com menor superfície de ataque.
+-   **Cache de Camadas**: A restauração de pacotes NuGet é feita em uma camada separada, antes de copiar todo o código-fonte. Isso permite que o Docker armazene em cache a camada de dependências, acelerando builds futuros caso as dependências não mudem.
 
-### Login do Usuário
+## 🖼️ Prints do funcionamento
 
-**POST** `/api/auth/login`
+### Execução Local (Swagger)
 
-**Request Body:**
-```json
-{
-  "username": "joao",
-  "password": "Senha123@"
-}
-```
+*<ins>Aqui você pode inserir um print da interface do Swagger rodando localmente.</ins>*
 
-**Response:**
-```json
-{
-  "token": "<JWT Token>"
-}
-```
+### Pipeline no GitHub Actions
 
-> Use o token no cabeçalho de requisições autenticadas:  
-> `Authorization: Bearer <JWT Token>`
+*<ins>Aqui você pode inserir um print do pipeline sendo executado com sucesso no GitHub Actions.</ins>*
 
----
+### Ambiente de Staging
 
+-   *<ins>Aqui você pode inserir um print da aplicação funcionando no ambiente de Staging.</ins>*
 
-## 🏢 Empresa
+### Ambiente de Produção
 
-### Criar empresa
+A aplicação em produção está disponível para os usuários finais.
 
-**POST** `/api/Empresa`
+-   *<ins>Aqui você pode inserir um print da aplicação funcionando no ambiente de Produção.</ins>*
 
-**Headers:**
-```
-Authorization: Bearer <JWT>
-Content-Type: application/json
-```
+## 🛠️ Tecnologias utilizadas
 
-**Payload:**
-```json
-{
-  "nome": "Empresa Teste",
-  "cnpj": "12345678000199",
-  "username": "empresa_teste",
-  "password": "senha123"
-}
-```
+### Backend
 
-### Listar empresas
+-   **.NET 8**: Framework para construção da API.
+-   **ASP.NET Core**: Para criar a aplicação web e os endpoints da API.
+-   **Entity Framework Core**: ORM para interação com o banco de dados.
+-   **AutoMapper**: Mapeamento de objetos (DTOs para Entidades).
 
-**GET** `/api/Empresa`
+### Segurança
 
-**Headers:**
-```
-Authorization: Bearer <JWT>
-```
+-   **JWT (JSON Web Tokens)**: Para autenticação e autorização baseada em tokens.
+-   **ASP.NET Core Identity**: Para gerenciamento de usuários e senhas.
 
-### Buscar empresa por ID
+### Banco de Dados
 
-**GET** `/api/Empresa/1`
+-   **Oracle**: Banco de dados relacional utilizado pela aplicação.
 
-### Atualizar empresa
+### Infraestrutura e DevOps
 
-**PUT** `/api/Empresa/1`
+-   **Docker**: Para containerização da aplicação.
+-   **Docker Compose**: Para orquestração de containers no ambiente local.
+-   **GitHub Actions**: Para automação do pipeline de CI/CD.
+-   **Azure App Service**: Plataforma de nuvem para hospedagem da aplicação (Staging e Produção).
 
-**Payload:**
-```json
-{
-  "nome": "Empresa Teste Atualizada",
-  "cnpj": "12345678000199",
-  "username": "empresa_teste_novo",
-  "password": "novasenha123"
-}
-```
+### Documentação
 
-### Deletar empresa
-
-**DELETE** `/api/Empresa/1`
-
----
-
-## 🌱 Emissão de Carbono
-
-### Criar nova emissão
-
-**POST** `/api/emissaocarbono`
-
-**Payload:**
-```json
-{
-  "fonte": "Transporte de Cargas",
-  "quantidadeToneladas": 15.75,
-  "data": "2023-11-15",
-  "descricao": "Emissões do transporte de mercadorias no mês de novembro",
-  "empresaId": 1
-}
-```
-
-### Listar emissões
-
-**GET** `/api/emissaocarbono`
-
-### Buscar emissão por ID
-
-**GET** `/api/emissaocarbono/1`
-
-### Buscar emissões por empresa
-
-**GET** `/api/emissaocarbono/empresa/1`
-
-### Atualizar emissão
-
-**PUT** `/api/emissaocarbono/1`
-
-**Payload:**
-```json
-{
-  "fonte": "Transporte de Cargas (Atualizado)",
-  "quantidadeToneladas": 18.20,
-  "data": "2023-11-15",
-  "descricao": "Emissões atualizadas do transporte de mercadorias",
-  "empresaId": 1
-}
-```
-
-### Deletar emissão
-
-**DELETE** `/api/emissaocarbono/1`
-
----
-
-## ✅ Observações
-
-- Todos os endpoints devem ser acessados via `http://localhost:8080`;
-- É obrigatório o uso do token JWT no cabeçalho `Authorization` para operações autenticadas;
-- Requisições sem autenticação ou com token inválido retornarão `401 Unauthorized`.
-
----
-
-## 🚀 Como rodar a aplicação
-
-1. Clone o projeto:
-```bash
-git clone https://github.com/mateusC2000/ControleCarbono.git
-```
-
-2. Suba a aplicação:
-
-```bash
-docker compose up
-```
-
----
-
-### 🧪 Execução ds testes:
-
-1. Após clonar o projeto:
-
-Execute o comando:
-
-```bash
-docker compose up tests
-```
-
----
+-   **Swagger (Swashbuckle)**: Para documentação interativa da API.
