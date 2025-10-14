@@ -63,7 +63,7 @@ jobs:
       - name: Deploy to Staging slot
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'ControleCarbono'
+          app-name: 'ControleCarbonoStage'
           package: .
 
   deploy-production:
