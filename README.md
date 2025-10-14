@@ -27,6 +27,9 @@ Para executar a aplicação e os serviços relacionados localmente, você precis
 
 ## 🔄 Pipeline CI/CD
 
+<img width="1651" height="580" alt="Screenshot from 2025-10-12 22-00-09" src="https://github.com/user-attachments/assets/94719c08-d524-472f-8f37-85387b0da948" />
+
+
 O projeto utiliza **GitHub Actions** para automatizar os processos de Integração Contínua (CI) e Entrega Contínua (CD).
 
 ### Etapas do Pipeline
@@ -150,3 +153,17 @@ A aplicação em produção está disponível para os usuários finais.
 ### Documentação
 
 -   **Swagger (Swashbuckle)**: Para documentação interativa da API.
+
+
+### Ambientes
+
+
+- Produção:
+  * Disponível na url: https://controlecarbono-bqajafhzhkbhhfcq.canadacentral-01.azurewebsites.net
+
+<img width="1317" height="704" alt="Screenshot from 2025-10-13 23-51-35" src="https://github.com/user-attachments/assets/9fe2a757-a57f-41d1-a0b4-574235208f31" />
+
+- Stage:
+  * Disponível na url: https://controlecarbono-bqajafhzhkbhhfcq.canadacentral-01.azurewebsites.net
+    
+<img width="1317" height="704" alt="Screenshot from 2025-10-13 23-52-02" src="https://github.com/user-attachments/assets/35c913fe-57bc-4576-9649-c7ce9b6fe776" />
