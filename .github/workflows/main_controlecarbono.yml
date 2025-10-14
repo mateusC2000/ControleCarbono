@@ -7,6 +7,7 @@ on:
   push:
     branches:
       - main
+      - staging
   workflow_dispatch:
 
 jobs:
@@ -41,6 +42,7 @@ jobs:
   deploy-staging:
     runs-on: ubuntu-latest
     needs: build
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging'
     permissions:
       id-token: write
       contents: read
@@ -54,20 +56,20 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_08F040C36368436F80B927DED71529BF }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_5313180F7FC7417E9EACFE856D6EDF22 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_34B213D5FBE74FFEA04117777AE488BA }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_5896E6AA59B64A89A0CEC05B7673BB08 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_D056AEF3E87240439EEC3CB9E6C5D226 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_B378FB03F3B4432FAE20091878E36AF1 }}
 
       - name: Deploy to Staging slot
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'ControleCarbono'
-          slot-name: 'Production'
           package: .
 
   deploy-production:
     runs-on: ubuntu-latest
     needs: deploy-staging
+    if: github.ref == 'refs/heads/main'
     permissions:
       id-token: write
       contents: read
